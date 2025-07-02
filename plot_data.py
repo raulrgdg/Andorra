@@ -4,7 +4,7 @@ import csv
 
 
 def load_csv_and_plot():
-    file_path = 'SEANCE_TIR_3/adc_data_20250612_094713.csv'
+    file_path = 'SEANCE_TIR_3/plaque1_tir2.csv'
     timestamps = []
     values = []
 
