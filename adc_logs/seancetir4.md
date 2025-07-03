@@ -22,3 +22,18 @@ C5 -> A17
 C3 -> A19
 C1 -> A21
 C4 -> A23
+
+
+
+
+
+3 tirs sur la plaque 1:
+
+Tir 1 - Tir 2 - Tir 3 -> les 3 tirs sont cohérents, 3 tirs sur les positions T1,T2,T3 voir photos avec images 
+
+
+
+4 tirs sur la plaque 2 avec la capa:
+
+- Tir 1: aucune donné, la carte n'envoie rien
+- Tir 2, 3 et 4 OK => données cohérentes -> voir les graphiques 

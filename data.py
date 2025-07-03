@@ -9,7 +9,7 @@ import csv
 # Configuration
 PORT = '/dev/ttyACM0'  # Modifier selon ton système
 BAUDRATE = 10000000
-DURATION_SECONDS = 5
+DURATION_SECONDS = 60
 MAX_VALID_ADC = 4095
 SAVE_FOLDER = "adc_logs"
 
