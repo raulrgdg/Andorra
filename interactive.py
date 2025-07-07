@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import pandas as pd
 
-csv_path = "SEANCE_TIR_3/plaque1_tir1.csv"
+csv_path = "seance_tir_4/tir4_plaque2.csv"
 df = pd.read_csv(csv_path)
 
 fig = go.Figure()
