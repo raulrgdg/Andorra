@@ -1,62 +1,31 @@
+import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-import csv
 
+CHANNELS = ['adc_23', 'adc_21', 'adc_19', 'adc_17', 'adc_15']
+csv_path = 'seance_tir_4/tir2_plaque1_maxwindow.csv'  # à adapter si besoin
 
-def load_csv_and_plot():
-    file_path = 'SEANCE_TIR_3/plaque1_tir2.csv'
-    timestamps = []
-    values = []
+df = pd.read_csv(csv_path)
 
-    with open(file_path, 'r') as f:
-        reader = csv.reader(f)
-        next(reader)  # Ignore l'en-tête
-        for row in reader:
-            try:
-                t, v = float(row[0]), int(row[1])
-                timestamps.append(t)
-                values.append(v)
-            except ValueError:
-                continue
+# Trouver le maximum global
+max_val = None
+max_idx = None
+max_channel = None
+for channel in CHANNELS:
+    idx = df[channel].idxmax()
+    val = df[channel].max()
+    if (max_val is None) or (val > max_val):
+        max_val = val
+        max_idx = idx
+        max_channel = channel
 
-    timestamps = np.array(timestamps)
-    values = np.array(values)
+fig, axs = plt.subplots(5, 1, figsize=(10, 12), sharex=True)
+pins = [23, 21, 19, 17, 15]
+for i, channel in enumerate(CHANNELS):
+    axs[i].plot(df['time_s'], df[channel])
+    axs[i].set_title(f"ADC Pin {pins[i]}")
+    axs[i].set_ylabel("Valeur ADC")
+    axs[i].grid(True)
 
-    print(f"📂 Données chargées depuis : {file_path}")
-    print(f"Nombre d'échantillons : {len(values)}")
-
-    # FFT
-    if len(timestamps) > 1:
-        sampling_interval = np.mean(np.diff(timestamps))
-        fs = 1.0 / sampling_interval
-        fft_vals = np.fft.fft(values - np.mean(values))
-        fft_freqs = np.fft.fftfreq(len(values), d=sampling_interval)
-        idx = fft_freqs >= 0
-        fft_freqs = fft_freqs[idx]
-        fft_magnitude = np.abs(fft_vals[idx]) * 2 / len(values)
-    else:
-        print("Pas assez de données pour une FFT.")
-        fft_freqs = []
-        fft_magnitude = []
-
-    # Tracés
-    fig, axs = plt.subplots(2, 1, figsize=(10, 6))
-
-    axs[0].plot(timestamps, values)
-    axs[0].set_title("Signal ADC (rechargé depuis CSV)")
-    axs[0].set_xlabel("Temps (s)")
-    axs[0].set_ylabel("Valeur ADC")
-    axs[0].grid(True)
-
-    axs[1].plot(fft_freqs, fft_magnitude)
-    axs[1].set_title("Transformée de Fourier (FFT)")
-    axs[1].set_xlabel("Fréquence (Hz)")
-    axs[1].set_ylabel("Amplitude")
-    axs[1].grid(True)
-
-    plt.tight_layout()
-    plt.savefig("plot_output.png")
-    print("📊 Graphique sauvegardé dans : plot_output.png")
-
-if __name__ == "__main__":
-    load_csv_and_plot()
+axs[-1].set_xlabel('Temps (s)')
+plt.tight_layout()
+plt.show()
