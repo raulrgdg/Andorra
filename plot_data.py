@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 CHANNELS = ['adc_23', 'adc_21', 'adc_19', 'adc_17', 'adc_15']
-csv_path = 'seance_tir_4/tir2_plaque1_maxwindow.csv'  # à adapter si besoin
+csv_path = 'seance_tir_4/tir1_plaque1_maxwindow.csv'  # à adapter si besoin
 
 df = pd.read_csv(csv_path)
 
