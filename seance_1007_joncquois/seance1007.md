@@ -50,3 +50,22 @@ array[index][i] = analogRead(adc_pins[i]);
 -> donc chaque appel à analogRead() est bloquant et prend environ 7–20 µs (selon réglage ADC, résolution, averaging…). Avec 5 canaux, tu passes facilement 80–100 µs par ligne, soit ≈10–12 kHz max malheureusement
 
 -> solution: il faut lire les ADC en DMA en parallèle -> utiliser la lib officielle ADC en non bloquant pour pouvoir lire en // les adcs rapidement.. cela permettra de lire le buffer sans blocage et d'accélérer de fou la lecture
+
+
+-> En lecture ADC + DMA + double buffer, tu peux monter à >150 kS/s (par ADC)
+
+Donc jusqu’à 300 kS/s au total sur 2 ADCs en parallèle (car on a 2 adcs sur une teensy, on pourrait utiliser les 2 en même temps)
+
+Si tu veux 5 canaux, tu peux faire lecture alternée ou multiplexée
+
+-> Par ex : ADC0 → canaux 15, 19, 23 et ADC1 → canaux 17, 21
+
+### utilisation de la lib ADC
+
+On passe de 11500 à plus de 55000 de sampling donc super rapide
+
+Avant on utilisait analogread() pour lire les données sauf qu'à cause du multiplexage on est lent
+-> on utilise mtn la lib adc de teensy pour lire les pins donc bcp plus rapide (car on fait moins d'average donc ça va plus vite)
+
+
+On a 55kHz donc en pratique on a 55 * 5 = 275 kHz de sampling frequency
