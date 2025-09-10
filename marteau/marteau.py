@@ -11,7 +11,7 @@ from datetime import datetime
 sd.default.device = 6 # set the device to the default device, print(sd.query_devices()) to get the list of devices
 DURATION = 5
 FS = 48000
-SENSITIVITY = 0.00225  # V/N
+SENSITIVITY = 0.002251  # V/N
 THRESHOLD_RELATIVE = 0.4  # seuil relatif
 
 # Fenêtre autour des impacts

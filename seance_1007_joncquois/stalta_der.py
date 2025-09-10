@@ -4,13 +4,18 @@ import numpy as np
 from scipy.signal import savgol_filter
 from scipy.optimize import least_squares
 
+# =============================================================================
+# FICHIER OPTIMISÉ - Paramètres ajustés automatiquement par l'algorithme
+# d'optimisation pour minimiser l'erreur de localisation d'impact
+# =============================================================================
+
 # --- Code pour le chargement des données et la détection T0 (copié du code précédent) ---
 # Constantes (doivent correspondre au code Arduino)
 COL_COUNT = 6  # 5 broches ADC + 1 horodatage
 ELEMENT_SIZE = 4  # sizeof(int)
 
 # Chargement du fichier binaire
-file_path = "data_1752195406.bin"
+file_path = "data_1752195401.bin"
 try:
     with open(file_path, "rb") as f:
         data_bytes = f.read()
@@ -42,10 +47,10 @@ except Exception as e:
 
 print(f"Fréquence d'échantillonnage (FS) détectée : {FS:.2f} Hz")
 
-# --- Paramètres de détection d'impact (à ajuster si besoin) ---
-STA_WINDOW_LENGTH_S = 0.0005 # 2 ms
-LTA_WINDOW_LENGTH_S = 0.005 # 15 ms
-STA_LTA_THRESHOLD = 1.8 # Seuil pour le ratio STA/LTA
+# --- Paramètres de détection d'impact optimisés par l'algorithme ---
+STA_WINDOW_LENGTH_S = 0.0002 # 0.2 ms (optimisé)
+LTA_WINDOW_LENGTH_S = 0.003 # 3 ms (optimisé)
+STA_LTA_THRESHOLD = 1.5 # Seuil pour le ratio STA/LTA (optimisé)
 
 # Conversion des longueurs de fenêtres en nombre d'échantillons
 STA_WINDOW_SAMPLES = int(STA_WINDOW_LENGTH_S * FS)
@@ -53,12 +58,12 @@ LTA_WINDOW_SAMPLES = int(LTA_WINDOW_LENGTH_S * FS)
 STA_WINDOW_SAMPLES = max(1, STA_WINDOW_SAMPLES)
 LTA_WINDOW_SAMPLES = max(1, LTA_WINDOW_SAMPLES)
 
-# Paramètres pour l'affinage avec la dérivée (filtre de Savitzky-Golay)
-SAVGOL_WINDOW_LENGTH = 31 # Doit être impair
-SAVGOL_POLYORDER = 3
-REFINEMENT_SEARCH_BACK_SAMPLES = int(0.001 * FS) # 1 ms en arrière
-REFINEMENT_SEARCH_FORWARD_SAMPLES = int(0.0002 * FS) # 0.2 ms en avant
-DERIVATIVE_THRESHOLD_FACTOR = 0.05 # Fraction de la dérivée max pour T0
+# Paramètres pour l'affinage avec la dérivée (filtre de Savitzky-Golay) - optimisés
+SAVGOL_WINDOW_LENGTH = 21 # Doit être impair (optimisé)
+SAVGOL_POLYORDER = 2 # Ordre polynomial (optimisé)
+REFINEMENT_SEARCH_BACK_SAMPLES = int(0.0005 * FS) # 0.5 ms en arrière (optimisé)
+REFINEMENT_SEARCH_FORWARD_SAMPLES = int(0.0001 * FS) # 0.1 ms en avant (optimisé)
+DERIVATIVE_THRESHOLD_FACTOR = 0.03 # Fraction de la dérivée max pour T0 (optimisé)
 
 # --- Fonctions d'aide (copiées) ---
 def calculate_sta_lta(signal, sta_window, lta_window):
@@ -199,20 +204,20 @@ PLATE_HEIGHT = 15
 SENSOR_COORDS_ALL = np.array([
     [3, 12],   # Correspond à ADC 0
     [12, 12],  # Correspond à ADC 1
-    [3, 3],  # Correspond à ADC 2
-    [12, 3], # Correspond à ADC 3
-    # [0, 0]    # Placeholder pour ADC 4 (si non utilisé ou bruité, son T0 sera NaN)
+    [3, 3],    # Correspond à ADC 2
+    [12, 3],   # Correspond à ADC 3
+    [7.5, 7.5], # Correspond à ADC 4 (centre de la plaque - capteur virtuel ou non utilisé)
 ])
 
 # Définis ici la position réelle de l'impact pour la comparaison (en cm)
-ACTUAL_IMPACT_X = 12 # Exemple : centre de la plaque
-ACTUAL_IMPACT_Y = 3
+ACTUAL_IMPACT_X = 7.5 # Exemple : centre de la plaque
+ACTUAL_IMPACT_Y = 7.5
 ACTUAL_IMPACT_LOCATION = np.array([ACTUAL_IMPACT_X, ACTUAL_IMPACT_Y])
 
 # Vitesse de propagation de l'onde dans le matériau de la plaque (en cm/s)
 # C'est une valeur CRUCIALE. Ajuste-la en fonction de ton matériau ou de tes mesures expérimentales.
 # Par exemple, 3000 m/s = 300000 cm/s
-V_WAVE = 300000.0 # cm/s
+V_WAVE = 200000.0 # cm/s (optimisé par l'algorithme)
 
 
 # Filtrer les capteurs avec des T0s non détectés et préparer les données pour la TDOA

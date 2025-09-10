@@ -1,2 +1,6 @@
 /adc_logs
 /output_zip
+/results
+__pycache__
+*.pyc
+results/
