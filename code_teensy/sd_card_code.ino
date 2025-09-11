@@ -53,12 +53,87 @@ void fill_array(int *array, size_t T, int index) {
 }
 // ----------------------------------------------------
 
+void listFiles() {
+    Serial.println("Files on SD card:");
+    File root = SD.open("/");
+    while (true) {
+        File entry = root.openNextFile();
+        if (!entry) break;
+
+        if (!entry.isDirectory()) {
+            Serial.print(entry.name());
+            Serial.print(" (");
+            Serial.print(entry.size());
+            Serial.println(" bytes)");
+        }
+        entry.close();
+    }
+    root.close();
+    Serial.println("End of file list");
+}
+
+void sendFile(const char* filename) {
+    File file = SD.open(filename, FILE_READ);
+    if (!file) {
+        Serial.print("ERROR: File not found: ");
+        Serial.println(filename);
+        return;
+    }
+
+    Serial.print("SENDING:");
+    Serial.print(filename);
+    Serial.print(":");
+    Serial.println(file.size());
+
+    // Send file in chunks
+    uint8_t buffer[512];
+    while (file.available()) {
+        size_t bytesRead = file.read(buffer, sizeof(buffer));
+        Serial.write(buffer, bytesRead);
+    }
+
+    Serial.println("END_OF_FILE");
+    file.close();
+}
+
+void handleSerialCommand() {
+    if (Serial.available()) {
+        String command = Serial.readStringUntil('\n');
+        command.trim();
+
+        if (command == "LIST") {
+            listFiles();
+        }
+        else if (command == "HELP") {
+            Serial.println("Available commands:");
+            Serial.println("LIST - List all files on SD card");
+            Serial.println("GET <filename> - Download a file");
+            Serial.println("HELP - Show this help");
+        }
+        else if (command.startsWith("GET ")) {
+            String filename = command.substring(4);
+            filename.trim();
+            sendFile(filename.c_str());
+        }
+        else {
+            Serial.print("Unknown command: ");
+            Serial.println(command);
+        }
+    }
+}
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
     if (!SD.begin(BUILTIN_SDCARD)) {
         digitalWrite(LED_BUILTIN, HIGH); // SD init failed
     }
+
+    Serial.begin(115200);
+    while (!Serial && millis() < 5000); // Wait for serial or timeout
+
+    Serial.println("Teensy Data Logger Ready");
+    Serial.println("Commands: LIST, GET <filename>, HELP");
 
     memset(after_detection, 0, sizeof(after_detection));
     memset(data, 0, sizeof(data));
@@ -71,6 +146,9 @@ void setup() {
 }
 
 void loop() {
+    // Handle serial commands (non-blocking)
+    handleSerialCommand();
+
     if (!detected) {
         fill_array(data, BUFFER_SIZE * COL_COUNT, array_index);
         array_index = (array_index + 1) % BUFFER_SIZE;
@@ -82,9 +160,12 @@ void loop() {
             saving = true;
         }
     } else {
-        Serial.println("Started to save data");
+        String filename = "data_" + String(rtc_get()) + ".bin";
 
-        auto file = SD.open(("data_" + String(rtc_get()) + ".bin").c_str(), FILE_WRITE);
+        Serial.print("FILENAME:");
+        Serial.println(filename);
+
+        auto file = SD.open(filename.c_str(), FILE_WRITE);
 
         // Save pre-trigger buffer (ring buffer logic)
         size_t tail_rows = BUFFER_SIZE - array_index;
